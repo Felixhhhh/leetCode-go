@@ -1,64 +1,25 @@
 package leetcode
 
-// 解法一 位图
+//滑动窗口-哈希桶
 func lengthOfLongestSubstring(s string) int {
-	if len(s) == 0 {
-		return 0
-	}
-	var bitSet [256]bool
-	result, left, right := 0, 0, 0
-	for left < len(s) {
-		// 右侧字符对应的 bitSet 被标记 true，说明此字符在 X 位置重复，需要左侧向前移动，直到将 X 标记为 false
-		if bitSet[s[right]] {
-			bitSet[s[left]] = false
+	window := make(map[byte]int)
+
+	left, right := 0, 0
+	res := 0 // 记录结果
+	for right < len(s) {
+		c := s[right]
+		right++
+		// 进行窗口内数据的一系列更新
+		window[c]++
+		// 判断左侧窗口是否要收缩
+		for window[c] > 1 {
+			d := s[left]
 			left++
-		} else {
-			bitSet[s[right]] = true
-			right++
+			// 进行窗口内数据的一系列更新
+			window[d]--
 		}
-		if result < right-left {
-			result = right - left
-		}
-		if left+result >= len(s) || right >= len(s) {
-			break
-		}
-	}
-	return result
-}
-
-// 解法二 滑动窗口
-func lengthOfLongestSubstring1(s string) int {
-	if len(s) == 0 {
-		return 0
-	}
-	var freq [127]int
-	result, left, right := 0, 0, -1
-
-	for left < len(s) {
-		if right+1 < len(s) && freq[s[right+1]] == 0 {
-			freq[s[right+1]]++
-			right++
-
-		} else {
-			freq[s[left]]--
-			left++
-		}
-		result = max(result, right-left+1)
-	}
-	return result
-}
-
-// 解法三 滑动窗口-哈希桶
-func lengthOfLongestSubstring2(s string) int {
-	right, left, res := 0, 0, 0
-	indexes := make(map[byte]int, len(s))
-	for left < len(s) {
-		if idx, ok := indexes[s[left]]; ok && idx >= right {
-			right = idx + 1
-		}
-		indexes[s[left]] = left
-		left++
-		res = max(res, left-right)
+		// 在这里更新答案
+		res = max(res, right-left)
 	}
 	return res
 }
